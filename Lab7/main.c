@@ -1,5 +1,9 @@
 //Universidad del Valle de Guatemala
-
+//Depto de Ingenieria Mecantronica y Electronica
+//Curso Digital2
+//Prof. Kurt Kellner
+//Diego Mencos
+//Carne
 
 //Bibliotecas
 #include<stdint.h>
@@ -12,13 +16,16 @@
 #include"driverlib/interrupt.h"
 #include "driverlib/uart.h"
 
+
+//Variables a usar en el programa
 int encender=false;
 int color_led;
 char dato_recibido;
 int estaEncendido = false;
+
+//Prototipo de funciones
 void timeOut(void);
-
-
+void InitUART(void);
 
 void TimeOut(){
     TimerIntClear(TIMER0_BASE,  TIMER_TIMA_TIMEOUT);
@@ -61,14 +68,14 @@ int main(void) {
 
 
     // Se manda mensajes por UART
-    UARTCharPut(UART0_BASE, 'H');
-    UARTCharPut(UART0_BASE, 'o');
-    UARTCharPut(UART0_BASE, 'l');
+    UARTCharPut(UART0_BASE, 'E');
+    UARTCharPut(UART0_BASE, 's');
+    UARTCharPut(UART0_BASE, 'c');
+    UARTCharPut(UART0_BASE, 'r');
+    UARTCharPut(UART0_BASE, 'i');
+    UARTCharPut(UART0_BASE, 'b');
     UARTCharPut(UART0_BASE, 'a');
-    UARTCharPut(UART0_BASE, ' ');
-    UARTCharPut(UART0_BASE, 'M');
-    UARTCharPut(UART0_BASE, 'u');
-    UARTCharPut(UART0_BASE, 'n');
+    UARTCharPut(UART0_BASE, ':');
     UARTCharPut(UART0_BASE, 'd');
     UARTCharPut(UART0_BASE, 'o');
     UARTCharPut(UART0_BASE, 10);
@@ -80,33 +87,26 @@ int main(void) {
                 if (dato_recibido=='r'){
                     encender=!encender;
                     color_led=2;
-
                 }
                 else if (dato_recibido=='b'){
                     encender=!encender;
                     color_led=4;
-
                 }
                 else if (dato_recibido=='g'){
                     encender=!encender;
                     color_led=8;
-
                 }
 
                 else{
                     color_led=0;
-
                 }
-
-
 
     }
 
 }
 
 
-void InitUART(void)
-{
+void InitUART(void){
     /*Enable the GPIO Port A*/
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 

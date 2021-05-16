@@ -3,7 +3,7 @@
 //Curso Digital2
 //Prof. Kurt Kellner
 //Diego Mencos
-//Carne
+//Carne 18300
 
 //Bibliotecas
 #include<stdint.h>
@@ -20,26 +20,21 @@
 //Variables a usar en el programa
 int encender=false;
 int color_led;
-char dato_recibido;
+char dato_recibido=0;
 int estaEncendido = false;
 
 //Prototipo de funciones
-void timeOut(void);
+void Timer0IntHandler(void);
+void UARTIntHandler(void);
 void InitUART(void);
+void colorLED(void);
+void cambioColor(void);
 
-void TimeOut(){
-    TimerIntClear(TIMER0_BASE,  TIMER_TIMA_TIMEOUT);
-    if (estaEncendido||!encender){
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0);
-    }else{
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, color_led);
-    }
-    estaEncendido = !estaEncendido;
-}
+
 
 
 int main(void) {
-    //Establecer reloj del microcontrolador
+    //Establecer reloj del microcontrolador a 40
     SysCtlClockSet(SYSCTL_XTAL_16MHZ|SYSCTL_SYSDIV_5);
 
     //Funcion de configuracion de UART0
@@ -59,9 +54,10 @@ int main(void) {
     //Habilitar interrupción por parte del GPTM
     TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
     //Establecer la ISR
-    TimerIntRegister(TIMER0_BASE, TIMER_A, TimeOut);
+    TimerIntRegister(TIMER0_BASE, TIMER_A, Timer0IntHandler);
     //Habilitar interrupción por parte del NVIC
     IntEnable(INT_TIMER0A);
+    IntEnable(INT_UART0);
     IntMasterEnable();
     //Habilitar temporizador
     TimerEnable(TIMER0_BASE, TIMER_A);
@@ -76,30 +72,21 @@ int main(void) {
     UARTCharPut(UART0_BASE, 'b');
     UARTCharPut(UART0_BASE, 'a');
     UARTCharPut(UART0_BASE, ':');
-    UARTCharPut(UART0_BASE, 'd');
-    UARTCharPut(UART0_BASE, 'o');
+    UARTCharPut(UART0_BASE, ' ');
+    UARTCharPut(UART0_BASE, 'r');
+    UARTCharPut(UART0_BASE, ',');
+    UARTCharPut(UART0_BASE, 'g');
+    UARTCharPut(UART0_BASE, ',');
+    UARTCharPut(UART0_BASE, 'b');
     UARTCharPut(UART0_BASE, 10);
     UARTCharPut(UART0_BASE, 13);
 
     while (1){
-        dato_recibido=UARTCharGet(UART0_BASE);
+       // dato_recibido=UARTCharGet(UART0_BASE);
 
-                if (dato_recibido=='r'){
-                    encender=!encender;
-                    color_led=2;
-                }
-                else if (dato_recibido=='b'){
-                    encender=!encender;
-                    color_led=4;
-                }
-                else if (dato_recibido=='g'){
-                    encender=!encender;
-                    color_led=8;
-                }
 
-                else{
-                    color_led=0;
-                }
+
+                colorLED();
 
     }
 
@@ -121,5 +108,54 @@ void InitUART(void){
 
     //Habilitamos las interrupciones de UART
     UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
+
+    UARTIntRegister(UART0_BASE ,UARTIntHandler);
+}
+
+
+void Timer0IntHandler(){
+    TimerIntClear(TIMER0_BASE,  TIMER_TIMA_TIMEOUT);
+    estaEncendido = !estaEncendido;
+}
+
+
+void UARTIntHandler(){
+    UARTIntClear (UART0_BASE, UART_INT_RX);
+    dato_recibido=UARTCharGet(UART0_BASE);
+    cambioColor();
+}
+
+void colorLED(void){
+
+    if (estaEncendido|| encender==false){
+        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, 0);
+    }else {
+        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3, color_led);
+    }
+
+}
+
+void cambioColor(void){
+
+    if (dato_recibido=='r'){
+         encender=!encender;
+         color_led=2;
+     }
+     else if (dato_recibido=='b'){
+         encender=!encender;
+         color_led=4;
+     }
+     else if (dato_recibido=='g'){
+         encender=!encender;
+         color_led=8;
+     }
+
+
+
+
+
+     else{
+         color_led=0;
+     }
 }
 
